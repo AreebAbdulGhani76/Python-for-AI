@@ -1,4 +1,3 @@
-
 import json
 import sqlite3
 from pathlib import Path
@@ -61,4 +60,38 @@ def save_complaint(customer_name, order_id, phone, complaint):
             values,
         ).fetchone()
 
-    return {"complaint_id": row[0], "status": "Pending"}
+    return {"complaint_id": row[0], "status": "Pending"}\
+    
+def save_messages(session_id, messages):
+    serialized_messages = messages_to_dict(messages)
+
+    with closing(connect()) as connection, connection:
+        connection.executemany(
+            """
+            INSERT INTO messages (session_id, message_json)
+            VALUES (?, ?)
+            """,
+            [
+                (session_id, json.dumps(message, ensure_ascii=False))
+                for message in serialized_messages
+            ],
+        )
+
+
+def load_messages(session_id):
+    with closing(connect()) as connection:
+        rows = connection.execute(
+            """
+            SELECT message_json
+            FROM messages
+            WHERE session_id = ?
+            ORDER BY id ASC
+            """,
+            (session_id,),
+        ).fetchall()
+
+    serialized_messages = [
+        json.loads(row[0]) for row in rows
+    ]
+
+    return messages_from_dict(serialized_messages)
