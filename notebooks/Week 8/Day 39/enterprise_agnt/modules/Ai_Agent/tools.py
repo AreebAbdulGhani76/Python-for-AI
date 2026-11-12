@@ -8,37 +8,35 @@ order_list = [
     "OR-1046",
     "OR-1047"
 ]
-@tool
-def fetch_menu() -> list[dict] :
-    return [
-     {"name": "Zinger Burger", "price": 850},
-     {"name": "Chicken Biryani", "price": 450},
-     {"name": "Club Sandwich", "price": 700}
-    ]
+
 
 @tool
-def validate_order_id(order_id: str) -> bool :
+def fetch_menu() -> list[dict]:
+    """Fetch the available food menu with item names and prices."""
+    return [
+        {"name": "Zinger Burger", "price": 850},
+        {"name": "Chicken Biryani", "price": 450},
+        {"name": "Club Sandwich", "price": 700}
+    ]
+
+
+@tool
+def validate_order_id(order_id: str) -> bool:
+    """Validate whether the provided order ID exists in the order list."""
     if order_id in order_list:
         return True
     return False
 
+
 @tool
-def log_complaint(customer_name : str, order_id : str, phone : int , complaint: str):
-    temp_dict = {
-        "customer_name": customer_name,
-        "order_id": order_id,
-        "phone": phone,
-        "complaint": complaint,
-        "status": "Pending"
-    }
-    # complaint_list.append(temp_dict)
+def log_complaint(customer_name: str, order_id: str, phone: str, complaint: str):
+    """Save a customer's complaint in the SQLite database."""
+    
+    return save_complaint(customer_name, order_id, phone, complaint)
 
-    # return {
-    #     "message": f"Saved! Total Complaint: {len(complaint_list)}"
-    # }
 
-Tools=[
-     fetch_menu,
-     validate_order_id,
-     log_complaint
- ]
+Tools = [
+    fetch_menu,
+    validate_order_id,
+    log_complaint
+]
