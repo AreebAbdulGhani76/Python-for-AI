@@ -95,3 +95,43 @@ def load_messages(session_id):
     ]
 
     return messages_from_dict(serialized_messages)
+
+
+import json
+from contextlib import closing
+from langchain_core.messages import messages_from_dict, messages_to_dict
+
+
+def append_messages(session_id, messages):
+
+    serialized = messages_to_dict(messages)
+
+    with closing(connect()) as connection, connection:
+        connection.executemany(
+            """
+            INSERT INTO messages (session_id, message_json)
+            VALUES (?, ?)
+            """,
+            [
+                (session_id, json.dumps(message, ensure_ascii=False))
+                for message in serialized
+            ]
+        )
+
+
+def load_messages(session_id):
+
+    with closing(connect()) as connection:
+        rows = connection.execute(
+            """
+            SELECT message_json
+            FROM messages
+            WHERE session_id = ?
+            ORDER BY id ASC
+            """,
+            (session_id,)
+        ).fetchall()
+
+    serialized = [json.loads(row[0]) for row in rows]
+
+    return messages_from_dict(serialized)
