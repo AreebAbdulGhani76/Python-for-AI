@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #18181b;
+    --sidebar: #f9f9fb;
+    --sidebar-border: #e4e4e7;
+    --surface: #ffffff;
+    --surface-hover: #f4f4f5;
+    --surface-active: #e4e4e7;
+    --border: #e4e4e7;
+    --border-subtle: #f0f0f2;
+    --muted: #71717a;
+    --accent: #2563eb;
+  }
+
+  .dark {
+    --background: #18181b;
+    --foreground: #f4f4f6;
+    --sidebar: #121215;
+    --sidebar-border: #27272e;
+    --surface: #202025;
+    --surface-hover: #27272f;
+    --surface-active: #2f2f38;
+    --border: #2e2e38;
+    --border-subtle: #23232c;
+    --muted: #9494a0;
+    --accent: #3b82f6;
+  }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(140, 140, 150, 0.25);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 140, 150, 0.45);
+}
+
+/* Typography and smooth transitions */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Markdown styling */
+.markdown-body table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.markdown-body th {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(120, 120, 140, 0.06);
+  border-bottom: 1px solid var(--border);
+}
+
+.markdown-body td {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.markdown-body tr:last-child td {
+  border-bottom: none;
+}
