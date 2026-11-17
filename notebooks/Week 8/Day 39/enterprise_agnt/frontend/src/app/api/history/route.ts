@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
+const BACKEND_API_KEY = process.env.BACKEND_API_KEY;
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
         method: 'GET',
         headers: {
           Accept: 'application/json',
+          ...(BACKEND_API_KEY ? { 'X-API-KEY': BACKEND_API_KEY } : {}),
         },
         signal: controller.signal,
         cache: 'no-store',

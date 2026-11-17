@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
+const BACKEND_API_KEY = process.env.BACKEND_API_KEY;
 
 export async function GET() {
   const startTime = Date.now();
@@ -12,6 +13,7 @@ export async function GET() {
 
     const res = await fetch(`${BACKEND_URL}/`, {
       method: 'GET',
+      headers: BACKEND_API_KEY ? { 'X-API-KEY': BACKEND_API_KEY } : undefined,
       signal: controller.signal,
       cache: 'no-store',
     });

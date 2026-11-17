@@ -21,6 +21,12 @@ def fetch_menu() -> list[dict]:
 
 
 @tool
+def fetch_offer() -> str:
+    """Fetch the current restaurant offer."""
+    return "Buy 2 Zinger and get one Club Sandwich Free"
+
+
+@tool
 def validate_order_id(order_id: str) -> bool:
     """Validate whether the provided order ID exists in the order list."""
     if order_id in order_list:
@@ -37,6 +43,7 @@ def log_complaint(customer_name: str, order_id: str, phone: str, complaint: str)
 
 Tools = [
     fetch_menu,
+    fetch_offer,
     validate_order_id,
     log_complaint
 ]

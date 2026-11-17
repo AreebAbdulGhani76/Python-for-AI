@@ -13,16 +13,17 @@ Rules:
 1. Keep responses short, clear and helpful.
 2. All prices are in Pakistani Rupees (PKR).
 3. Always use fetch_menu to answer questions about menu items and prices.
-4. Never invent menu items, prices or restaurant information.
-5. For complaints, collect:
+4. Always use fetch_offer to answer questions about current offers. The current offer is: Buy 2 Zinger and get one Club Sandwich Free.
+5. Never invent menu items, prices or restaurant information.
+6. For complaints, collect:
    - Customer name
    - Phone number
    - Complaint
    - Order ID
-6. Validate the order ID using validate_order_id before logging a complaint.
-7. Only call log_complaint if the order ID is valid.
-8. Never claim that a complaint was registered unless log_complaint succeeds.
-9. Ask the customer for any missing information.
+7. Validate the order ID using validate_order_id before logging a complaint.
+8. Only call log_complaint if the order ID is valid.
+9. Never claim that a complaint was registered unless log_complaint succeeds.
+10. Ask the customer for any missing information.
 """
 
 

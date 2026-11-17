@@ -13,30 +13,32 @@ def connect():
     return sqlite3.connect(str(DB_PATH), timeout=30)
 
 
-with closing(connect()) as connection, connection:
-    connection.execute("""
-        CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id TEXT NOT NULL,
-            message_json TEXT NOT NULL
-        )
-    """)
+def init_database():
+    """Create the SQLite tables and indexes if they do not exist."""
+    with closing(connect()) as connection, connection:
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                message_json TEXT NOT NULL
+            )
+        """)
 
-    connection.execute(
-        "CREATE INDEX IF NOT EXISTS messages_session ON messages(session_id, id)"
-    )
-
-    connection.execute("""
-        CREATE TABLE IF NOT EXISTS complaints (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            customer_name TEXT NOT NULL,
-            order_id TEXT NOT NULL,
-            phone TEXT NOT NULL,
-            complaint TEXT NOT NULL,
-            status TEXT NOT NULL DEFAULT 'Pending',
-            UNIQUE(customer_name, order_id, phone, complaint)
+        connection.execute(
+            "CREATE INDEX IF NOT EXISTS messages_session ON messages(session_id, id)"
         )
-    """)
+
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS complaints (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_name TEXT NOT NULL,
+                order_id TEXT NOT NULL,
+                phone TEXT NOT NULL,
+                complaint TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'Pending',
+                UNIQUE(customer_name, order_id, phone, complaint)
+            )
+        """)
 
 
 def save_complaint(customer_name, order_id, phone, complaint):

@@ -4,14 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { ChatSession } from '@/types/chat';
 import { useTheme } from '@/context/ThemeContext';
 import {
-  SquarePen,
   MessageSquare,
-  Trash2,
-  Sun,
   Moon,
-  Search,
   PanelLeftClose,
+  Plus,
+  Search,
   Sparkles,
+  Sun,
+  Trash2,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -39,188 +39,92 @@ export function Sidebar({
   const [searchQuery, setSearchQuery] = useState('');
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  useEffect(() => setIsClient(true), []);
 
-  const filteredSessions = sessions.filter((s) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      s.title.toLowerCase().includes(q) ||
-      (s.lastMessage && s.lastMessage.toLowerCase().includes(q)) ||
-      s.id.toLowerCase().includes(q)
-    );
+  const filteredSessions = sessions.filter((session) => {
+    const query = searchQuery.trim().toLowerCase();
+    return !query || session.title.toLowerCase().includes(query) ||
+      (session.lastMessage && session.lastMessage.toLowerCase().includes(query)) ||
+      session.id.toLowerCase().includes(query);
   });
 
-  // Time groupings
   const now = isClient ? Date.now() : 0;
-  const oneDay = 24 * 60 * 60 * 1000;
-  const sevenDays = 7 * oneDay;
+  const day = 24 * 60 * 60 * 1000;
+  const today = isClient ? filteredSessions.filter((session) => now - session.updatedAt < day) : filteredSessions;
+  const week = isClient ? filteredSessions.filter((session) => now - session.updatedAt >= day && now - session.updatedAt < 7 * day) : [];
+  const older = isClient ? filteredSessions.filter((session) => now - session.updatedAt >= 7 * day) : [];
 
-  const todaySessions = isClient
-    ? filteredSessions.filter((s) => now - s.updatedAt < oneDay)
-    : filteredSessions;
-  const weekSessions = isClient
-    ? filteredSessions.filter(
-        (s) => now - s.updatedAt >= oneDay && now - s.updatedAt < sevenDays
-      )
-    : [];
-  const olderSessions = isClient
-    ? filteredSessions.filter((s) => now - s.updatedAt >= sevenDays)
-    : [];
+  const selectSession = (id: string) => {
+    onSelectSession(id);
+    if (window.innerWidth < 1024) onClose();
+  };
 
   return (
     <>
-      {/* Mobile backdrop */}
-      {isOpen && (
-        <div
-          onClick={onClose}
-          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden"
-        />
-      )}
+      {isOpen && <div onClick={onClose} className="sidebar-backdrop lg:hidden" />}
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed lg:static top-0 bottom-0 left-0 z-50 w-64 md:w-72 bg-zinc-950 text-zinc-300 border-r border-zinc-800/70 flex flex-col transition-transform duration-200 ease-in-out shrink-0 select-none ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
-      >
-        {/* Top Header / Brand */}
-        <div className="h-14 px-4 flex items-center justify-between border-b border-zinc-800/60">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-amber-400">
-              <Sparkles className="w-3.5 h-3.5" />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-semibold tracking-tight text-zinc-100">
-                Xander AI
-              </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-medium">
-                Agent
-              </span>
+      <aside className={`app-sidebar ${isOpen ? 'is-open' : ''}`} aria-label="Chat history">
+        <div className="sidebar-top">
+          <div className="brand-lockup">
+            <div className="brand-mark"><Sparkles className="h-[18px] w-[18px]" /></div>
+            <div>
+              <p className="brand-name">Xander</p>
+              <p className="brand-caption">Restaurant concierge</p>
             </div>
           </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => {
-                onNewSession();
-                if (window.innerWidth < 1024) onClose();
-              }}
-              title="New chat (Ctrl+K)"
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-            >
-              <SquarePen className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={onClose}
-              title="Close sidebar"
-              className="lg:hidden p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-            >
-              <PanelLeftClose className="w-4 h-4" />
-            </button>
-          </div>
+          <button onClick={onClose} type="button" aria-label="Close chat history" className="sidebar-action lg:hidden">
+            <PanelLeftClose className="h-4 w-4" />
+          </button>
         </div>
 
-        {/* Search */}
-        {sessions.length > 2 && (
-          <div className="px-3 pt-3 pb-1">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search chats..."
-                className="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 placeholder:text-zinc-500 focus:outline-hidden focus:border-zinc-700 transition-colors"
-              />
-            </div>
+        <button
+          onClick={() => {
+            onNewSession();
+            if (window.innerWidth < 1024) onClose();
+          }}
+          type="button"
+          className="sidebar-new-chat"
+        >
+          <span className="sidebar-new-icon"><Plus className="h-4 w-4" /></span>
+          <span className="sidebar-new-copy"><strong>Start a new chat</strong><span>A fresh table, whenever you like</span></span>
+        </button>
+
+        {sessions.length > 1 && (
+          <div className="sidebar-search">
+            <Search className="h-3.5 w-3.5" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Find a conversation"
+              aria-label="Search conversations"
+            />
           </div>
         )}
 
-        {/* Sessions list */}
-        <div className="flex-1 overflow-y-auto px-2 py-3 space-y-4">
+        <div className="sidebar-history">
           {filteredSessions.length === 0 ? (
-            <div className="text-center py-10 px-3 text-xs text-zinc-500">
-              {searchQuery ? 'No chats found' : 'No chat history yet'}
-            </div>
+            <div className="sidebar-empty">{searchQuery ? 'No conversations match that search.' : 'Your conversations will be saved here.'}</div>
           ) : (
             <>
-              {todaySessions.length > 0 && (
-                <SessionSection
-                  title="Today"
-                  sessions={todaySessions}
-                  activeSessionId={activeSessionId}
-                  onSelectSession={(id) => {
-                    onSelectSession(id);
-                    if (window.innerWidth < 1024) onClose();
-                  }}
-                  onDeleteSession={onDeleteSession}
-                />
-              )}
-
-              {weekSessions.length > 0 && (
-                <SessionSection
-                  title="Previous 7 Days"
-                  sessions={weekSessions}
-                  activeSessionId={activeSessionId}
-                  onSelectSession={(id) => {
-                    onSelectSession(id);
-                    if (window.innerWidth < 1024) onClose();
-                  }}
-                  onDeleteSession={onDeleteSession}
-                />
-              )}
-
-              {olderSessions.length > 0 && (
-                <SessionSection
-                  title="Older"
-                  sessions={olderSessions}
-                  activeSessionId={activeSessionId}
-                  onSelectSession={(id) => {
-                    onSelectSession(id);
-                    if (window.innerWidth < 1024) onClose();
-                  }}
-                  onDeleteSession={onDeleteSession}
-                />
-              )}
+              {today.length > 0 && <SessionSection title="Today" sessions={today} activeSessionId={activeSessionId} onSelectSession={selectSession} onDeleteSession={onDeleteSession} />}
+              {week.length > 0 && <SessionSection title="Previous 7 days" sessions={week} activeSessionId={activeSessionId} onSelectSession={selectSession} onDeleteSession={onDeleteSession} />}
+              {older.length > 0 && <SessionSection title="Earlier" sessions={older} activeSessionId={activeSessionId} onSelectSession={selectSession} onDeleteSession={onDeleteSession} />}
             </>
           )}
         </div>
 
-        {/* Sidebar Footer */}
-        <div className="p-3 border-t border-zinc-800/60 bg-zinc-950/80 space-y-2">
-          {/* Theme switcher */}
-          <button
-            onClick={toggleTheme}
-            className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              {theme === 'dark' ? (
-                <Moon className="w-3.5 h-3.5" />
-              ) : (
-                <Sun className="w-3.5 h-3.5 text-amber-400" />
-              )}
-              <span>Theme</span>
+        <div className="sidebar-footer">
+          <button onClick={toggleTheme} type="button" className="theme-toggle">
+            <span className="theme-toggle-label">
+              {theme === 'dark' ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5 text-amber-300" />}
+              Appearance
             </span>
-            <span className="text-[11px] font-mono capitalize px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
-              {theme}
-            </span>
+            <span className="theme-value">{theme}</span>
           </button>
-
-          {/* Backend status indicator */}
-          <div className="flex items-center justify-between px-2.5 py-1.5 text-[11px] text-zinc-500 font-mono">
-            <span className="flex items-center gap-2">
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  backendOnline ? 'bg-emerald-500' : 'bg-rose-500'
-                }`}
-              />
-              <span>FastAPI Backend</span>
-            </span>
-            <span>{backendOnline ? '8000 Online' : 'Offline'}</span>
+          <div className="backend-indicator">
+            <span className="backend-label"><span className={`status-dot ${backendOnline ? 'online' : 'offline'}`} />Assistant service</span>
+            <span>{backendOnline ? 'Connected' : 'Offline'}</span>
           </div>
         </div>
       </aside>
@@ -242,40 +146,35 @@ function SessionSection({
   onDeleteSession: (id: string) => void;
 }) {
   return (
-    <div className="space-y-0.5">
-      <h4 className="px-2.5 py-1 text-[11px] font-medium text-zinc-500 tracking-wider">
-        {title}
-      </h4>
-      {sessions.map((session) => {
-        const isActive = session.id === activeSessionId;
-        return (
-          <div
-            key={session.id}
+    <section className="sidebar-section">
+      <h2 className="sidebar-section-title">{title}</h2>
+      {sessions.map((session) => (
+        <div
+          key={session.id}
+          className={`sidebar-session ${session.id === activeSessionId ? 'active' : ''}`}
+        >
+          <button
             onClick={() => onSelectSession(session.id)}
-            className={`group relative flex items-center justify-between px-2.5 py-2 rounded-lg text-xs cursor-pointer transition-colors ${
-              isActive
-                ? 'bg-zinc-800/90 text-zinc-100 font-medium'
-                : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
-            }`}
+            type="button"
+            aria-current={session.id === activeSessionId ? 'page' : undefined}
+            className="sidebar-session-select"
           >
-            <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
-              <MessageSquare className="w-3.5 h-3.5 shrink-0 opacity-60" />
-              <span className="truncate">{session.title}</span>
-            </div>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteSession(session.id);
-              }}
-              title="Delete conversation"
-              className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-zinc-700/80 text-zinc-400 hover:text-rose-400 transition-all shrink-0"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
-          </div>
-        );
-      })}
-    </div>
+            <span className="sidebar-session-label"><MessageSquare className="h-3.5 w-3.5" /><span>{session.title}</span></span>
+          </button>
+          <button
+            onClick={(event) => {
+              event.stopPropagation();
+              onDeleteSession(session.id);
+            }}
+            type="button"
+            aria-label={`Delete ${session.title}`}
+            title="Delete conversation"
+            className="sidebar-delete"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ))}
+    </section>
   );
 }

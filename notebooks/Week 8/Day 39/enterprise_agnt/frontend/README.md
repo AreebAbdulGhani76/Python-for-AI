@@ -42,18 +42,23 @@ A production-grade, ChatGPT/Claude-inspired chat interface built for the **Xande
 
 In your backend directory (`enterprise_agnt`):
 ```bash
-# Verify your .env file has your OPENROUTER_API_KEY / OPENAI_API_KEY
-uvicorn main:app --reload --port 8000
+# Verify the parent Python-for-AI/.env has OPEN_ROUTER_KEY
+uv sync
+uv run fastapi dev --host 127.0.0.1 --port 8000
 ```
-Backend will be live at `http://localhost:8000`.
+Backend will be live at `http://127.0.0.1:8000`.
 
 ### 2. Configure Environment Variables
 
 The frontend includes `.env.local` configured by default:
 ```env
-BACKEND_URL=http://localhost:8000
-NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+BACKEND_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8000
+# Required only when the backend auth key is configured.
+BACKEND_API_KEY=your_backend_auth_key
 ```
+
+`BACKEND_API_KEY` is used only by the Next.js server proxy and is never sent to the browser. Keep it in the ignored `.env.local` file.
 
 ### 3. Install Dependencies & Run Frontend
 
