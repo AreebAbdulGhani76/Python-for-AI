@@ -7,10 +7,7 @@ import {
   AlertCircle,
   Bot,
   Check,
-  ChevronDown,
-  ChevronRight,
   Copy,
-  Wrench,
 } from 'lucide-react';
 
 interface MessageItemProps {
@@ -19,7 +16,6 @@ interface MessageItemProps {
 
 export function MessageItem({ message }: MessageItemProps) {
   const [copied, setCopied] = useState(false);
-  const [toolExpanded, setToolExpanded] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -46,43 +42,8 @@ export function MessageItem({ message }: MessageItemProps) {
     );
   }
 
-  if (message.role === 'tool') {
-    let formattedJson = message.content;
-    let toolBadgeText = 'Assistant activity';
-
-    try {
-      const parsed = JSON.parse(message.content);
-      formattedJson = JSON.stringify(parsed, null, 2);
-      if (Array.isArray(parsed)) toolBadgeText = `Menu lookup · ${parsed.length} items`;
-      else if (typeof parsed === 'object' && parsed !== null && 'complaint_id' in parsed) {
-        toolBadgeText = `Complaint saved · #${parsed.complaint_id}`;
-      } else if (typeof parsed === 'string') toolBadgeText = 'Offer lookup';
-    } catch {
-      if (message.content === 'True') toolBadgeText = 'Order ID verified';
-      if (message.content === 'False') toolBadgeText = 'Order ID not found';
-    }
-
-    return (
-      <div className="message-assistant-row">
-        <div className="assistant-avatar"><Wrench className="h-4 w-4" /></div>
-        <div className="tool-card">
-          <button
-            onClick={() => setToolExpanded(!toolExpanded)}
-            type="button"
-            aria-expanded={toolExpanded}
-            className="tool-card-trigger"
-          >
-            <span className="tool-card-title"><Wrench className="h-3.5 w-3.5" />{toolBadgeText}</span>
-            <span className="flex items-center gap-1 text-[10px]">
-              {toolExpanded ? 'Hide details' : 'View details'}
-              {toolExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-            </span>
-          </button>
-          {toolExpanded && <pre><code>{formattedJson}</code></pre>}
-        </div>
-      </div>
-    );
-  }
+  if (message.role === 'tool') return null;
+  if (!message.content.trim()) return null;
 
   return (
     <div className="message-assistant-row">
@@ -101,7 +62,7 @@ export function MessageItem({ message }: MessageItemProps) {
           </div>
         ) : (
           <div className="message-body markdown-body">
-            {message.content ? <MarkdownContent content={message.content} /> : <span className="italic text-[12px] text-zinc-400">Working on your request…</span>}
+            <MarkdownContent content={message.content} />
           </div>
         )}
       </div>

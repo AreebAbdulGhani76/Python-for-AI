@@ -18,7 +18,6 @@ import {
 } from '@/lib/storage';
 import { ChatHeader } from './ChatHeader';
 import { MessageItem } from './MessageItem';
-import { ThinkingIndicator } from './ThinkingIndicator';
 import { MessageComposer } from './MessageComposer';
 import { WelcomeScreen } from './WelcomeScreen';
 import { Sidebar } from '../sidebar/Sidebar';
@@ -34,7 +33,6 @@ export function ChatArea() {
   const [backendOnline, setBackendOnline] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [thinkingStartTime, setThinkingStartTime] = useState<number>(0);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -114,7 +112,12 @@ export function ChatArea() {
       const data = await fetchChatHistory(sessionId);
       if (data && Array.isArray(data.messages)) {
         const mappedMessages: ChatMessage[] = data.messages
-          .filter((m) => m.content && m.content.trim().length > 0)
+          .filter(
+            (m) =>
+              (m.role === 'human' || m.role === 'ai') &&
+              m.content &&
+              m.content.trim().length > 0
+          )
           .map((m, index) => ({
             id: `${sessionId}_hist_${index}`,
             role: m.role as any,
@@ -186,7 +189,6 @@ export function ChatArea() {
 
     setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
-    setThinkingStartTime(Date.now());
     setIsUserScrolledUp(false);
 
     try {
@@ -214,16 +216,20 @@ export function ChatArea() {
             (m) => m.role === 'tool'
           );
           if (hasToolMessages) {
-            const mapped: ChatMessage[] = refreshedHistory.messages.map(
-              (m, idx) => ({
-                id: `${currentSession}_sync_${idx}`,
-                role: m.role as any,
-                content: m.content,
-                timestamp: Date.now(),
-                status: 'complete',
-              })
+            const visibleMessages = refreshedHistory.messages.filter(
+              (m) =>
+                (m.role === 'human' || m.role === 'ai') &&
+                m.content &&
+                m.content.trim().length > 0
             );
-            setMessages(mapped);
+            const mapped: ChatMessage[] = visibleMessages.map((m, idx) => ({
+              id: `${currentSession}_sync_${idx}`,
+              role: m.role as any,
+              content: m.content,
+              timestamp: Date.now(),
+              status: 'complete',
+            }));
+            if (mapped.length > 0) setMessages(mapped);
           }
         }
       } catch (historySyncErr) {
@@ -313,10 +319,6 @@ export function ChatArea() {
               {messages.map((message) => (
                 <MessageItem key={message.id} message={message} />
               ))}
-
-              {isLoading && (
-                <ThinkingIndicator startTime={thinkingStartTime} />
-              )}
 
               <div ref={messagesEndRef} className="h-4" />
             </div>
